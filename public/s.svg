@@ -1,0 +1,28 @@
+<svg width="960" height="500">
+    <g transform="translate(120,20)">
+        <path class="link" d="M180,197.1428571428571C270,197.1428571428571 270,131.42857142857142 360,131.42857142857142"></path>
+        <path class="link" d="M180,197.1428571428571C270,197.1428571428571 270,262.85714285714283 360,262.85714285714283"></path>
+        <path class="link" d="M0,262.85714285714283C90,262.85714285714283 90,197.1428571428571 180,197.1428571428571"></path>
+        <path class="link" d="M0,262.85714285714283C90,262.85714285714283 90,328.57142857142856 180,328.57142857142856"></path>
+        <g class="node" transform="translate(180,328.5714416503906)">
+            <circle r="10" style="fill: rgb(255, 255, 255);"></circle>
+            <text x="13" dy=".35em" text-anchor="start" style="fill-opacity: 1;">Level 2: B</text>
+        </g>
+        <g class="node" transform="translate(360,262.8571472167969)">
+            <circle r="10" style="fill: rgb(255, 255, 255);"></circle>
+            <text x="13" dy=".35em" text-anchor="start" style="fill-opacity: 1;">Daughter of A</text>
+        </g>
+        <g class="node" transform="translate(360,131.42857360839844)">
+            <circle r="10" style="fill: rgb(255, 255, 255);"></circle>
+            <text x="13" dy=".35em" text-anchor="start" style="fill-opacity: 1;">Son of A</text>
+        </g>
+        <g class="node" transform="translate(180,197.14285278320312)">
+            <circle r="10" style="fill: rgb(255, 255, 255);"></circle>
+            <text x="-13" dy=".35em" text-anchor="end" style="fill-opacity: 1;">Level 2: A</text>
+        </g>
+        <g class="node" transform="translate(0,262.8571472167969)">
+            <circle r="10" style="fill: rgb(255, 255, 255);"></circle>
+            <text x="-13" dy=".35em" text-anchor="end" style="fill-opacity: 1;">Top Level</text>
+        </g>
+    </g>
+</svg>

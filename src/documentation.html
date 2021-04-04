@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+</head>
+
+<body>
+  <div id="app">
+    <v-app>
+      <v-main>
+        <v-container>
+
+          <v-card>
+            <v-card-title class="indigo white--text headline">
+              User Directory
+            </v-card-title>
+            <v-row class="pa-4" justify="space-between">
+              <v-col cols="5">
+                <v-treeview :active.sync="active" :items="items" activatable color="warning" open-on-click transition>
+                  <template v-slot:prepend="{ item }">
+                    <v-icon v-if="!item.children">
+                      mdi-account
+                    </v-icon>
+                  </template>
+                </v-treeview>
+              </v-col>
+
+              <v-divider vertical></v-divider>
+
+              <v-col class="d-flex text-center">
+                <v-scroll-y-transition mode="out-in">
+                  <div v-if="!selected" class="title grey--text text--lighten-1 font-weight-light"
+                    style="align-self: center;">
+                    Select a User
+                  </div>
+                  <v-card v-else :key="selected.id" class="pt-6 mx-auto" flat max-width="400">
+                    <v-card-text>
+                      <v-avatar v-if="avatar" size="88">
+                        <v-img :src="`https://avataaars.io/${avatar}`" class="mb-6"></v-img>
+                      </v-avatar>
+                      <h3 class="headline mb-2">
+                        {{ selected.name }}
+                      </h3>
+                      <div class="blue--text mb-2">
+                        {{ selected.email }}
+                      </div>
+                      <div class="blue--text subheading font-weight-bold">
+                        {{ selected.username }}
+                      </div>
+                    </v-card-text>
+                    <v-divider></v-divider>
+                    <v-row class="text-left" tag="v-card-text">
+                      <v-col class="text-right mr-4 mb-2" tag="strong" cols="5">
+                        Company:
+                      </v-col>
+                      <v-col>{{ selected.company.name }}</v-col>
+                      <v-col class="text-right mr-4 mb-2" tag="strong" cols="5">
+                        Website:
+                      </v-col>
+                      <v-col>
+                        <a :href="`//${selected.website}`" target="_blank">{{ selected.website }}</a>
+                      </v-col>
+                      <v-col class="text-right mr-4 mb-2" tag="strong" cols="5">
+                        Phone:
+                      </v-col>
+                      <v-col>{{ selected.phone }}</v-col>
+                    </v-row>
+                  </v-card>
+                </v-scroll-y-transition>
+              </v-col>
+            </v-row>
+          </v-card>
+        </v-container>
+      </v-main>
+    </v-app>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+  <script>
+    const avatars = [
+      '?accessoriesType=Blank&avatarStyle=Circle&clotheColor=PastelGreen&clotheType=ShirtScoopNeck&eyeType=Wink&eyebrowType=UnibrowNatural&facialHairColor=Black&facialHairType=MoustacheMagnum&hairColor=Platinum&mouthType=Concerned&skinColor=Tanned&topType=Turban',
+      '?accessoriesType=Sunglasses&avatarStyle=Circle&clotheColor=Gray02&clotheType=ShirtScoopNeck&eyeType=EyeRoll&eyebrowType=RaisedExcited&facialHairColor=Red&facialHairType=BeardMagestic&hairColor=Red&hatColor=White&mouthType=Twinkle&skinColor=DarkBrown&topType=LongHairBun',
+      '?accessoriesType=Prescription02&avatarStyle=Circle&clotheColor=Black&clotheType=ShirtVNeck&eyeType=Surprised&eyebrowType=Angry&facialHairColor=Blonde&facialHairType=Blank&hairColor=Blonde&hatColor=PastelOrange&mouthType=Smile&skinColor=Black&topType=LongHairNotTooLong',
+      '?accessoriesType=Round&avatarStyle=Circle&clotheColor=PastelOrange&clotheType=Overall&eyeType=Close&eyebrowType=AngryNatural&facialHairColor=Blonde&facialHairType=Blank&graphicType=Pizza&hairColor=Black&hatColor=PastelBlue&mouthType=Serious&skinColor=Light&topType=LongHairBigHair',
+      '?accessoriesType=Kurt&avatarStyle=Circle&clotheColor=Gray01&clotheType=BlazerShirt&eyeType=Surprised&eyebrowType=Default&facialHairColor=Red&facialHairType=Blank&graphicType=Selena&hairColor=Red&hatColor=Blue02&mouthType=Twinkle&skinColor=Pale&topType=LongHairCurly',
+    ]
+
+    const pause = ms => new Promise(resolve => setTimeout(resolve, ms))
+    new Vue({
+      el: '#app',
+      vuetify: new Vuetify(),
+      data: () => ({
+        active: [],
+        avatar: null,
+        open: [],
+        users: [
+          {
+            id: 1,
+            children:[],
+            name: "Leanne Graham",
+            username: "Bret",
+            email: "Sincere@april.biz",
+            address: {
+              street: "Kulas Light",
+              suite: "Apt. 556",
+              city: "Gwenborough",
+              zipcode: "92998-3874",
+              geo: {
+                lat: "-37.3159",
+                lng: "81.1496"
+              }
+            },
+            phone: "1-770-736-8031 x56442",
+            website: "hildegard.org",
+            company: {
+              name: "Romaguera-Crona",
+              catchPhrase: "Multi-layered client-server neural-net",
+              bs: "harness real-time e-markets"
+            }
+          },
+          {
+            id: 2,
+            name: "Ervin Howell",
+            username: "Antonette",
+            email: "Shanna@melissa.tv",
+            address: {
+              street: "Victor Plains",
+              suite: "Suite 879",
+              city: "Wisokyburgh",
+              zipcode: "90566-7771",
+              geo: {
+                lat: "-43.9509",
+                lng: "-34.4618"
+              }
+            },
+            phone: "010-692-6593 x09125",
+            website: "anastasia.net",
+            company: {
+              name: "Deckow-Crist",
+              catchPhrase: "Proactive didactic contingency",
+              bs: "synergize scalable supply-chains"
+            }
+          },
+          {
+            id: 3,
+            name: "Clementine Bauch",
+            username: "Samantha",
+            email: "Nathan@yesenia.net",
+            address: {
+              street: "Douglas Extension",
+              suite: "Suite 847",
+              city: "McKenziehaven",
+              zipcode: "59590-4157",
+              geo: {
+                lat: "-68.6102",
+                lng: "-47.0653"
+              }
+            },
+            phone: "1-463-123-4447",
+            website: "ramiro.info",
+            company: {
+              name: "Romaguera-Jacobson",
+              catchPhrase: "Face to face bifurcated interface",
+              bs: "e-enable strategic applications"
+            }
+          },
+          {
+            id: 4,
+            name: "Patricia Lebsack",
+            username: "Karianne",
+            email: "Julianne.OConner@kory.org",
+            address: {
+              street: "Hoeger Mall",
+              suite: "Apt. 692",
+              city: "South Elvis",
+              zipcode: "53919-4257",
+              geo: {
+                lat: "29.4572",
+                lng: "-164.2990"
+              }
+            },
+            phone: "493-170-9623 x156",
+            website: "kale.biz",
+            company: {
+              name: "Robel-Corkery",
+              catchPhrase: "Multi-tiered zero tolerance productivity",
+              bs: "transition cutting-edge web services"
+            }
+          },
+          {
+            id: 5,
+            name: "Chelsey Dietrich",
+            username: "Kamren",
+            email: "Lucio_Hettinger@annie.ca",
+            address: {
+              street: "Skiles Walks",
+              suite: "Suite 351",
+              city: "Roscoeview",
+              zipcode: "33263",
+              geo: {
+                lat: "-31.8129",
+                lng: "62.5342"
+              }
+            },
+            phone: "(254)954-1289",
+            website: "demarco.info",
+            company: {
+              name: "Keebler LLC",
+              catchPhrase: "User-centric fault-tolerant solution",
+              bs: "revolutionize end-to-end systems"
+            }
+          },
+          {
+            id: 6,
+            name: "Mrs. Dennis Schulist",
+            username: "Leopoldo_Corkery",
+            email: "Karley_Dach@jasper.info",
+            address: {
+              street: "Norberto Crossing",
+              suite: "Apt. 950",
+              city: "South Christy",
+              zipcode: "23505-1337",
+              geo: {
+                lat: "-71.4197",
+                lng: "71.7478"
+              }
+            },
+            phone: "1-477-935-8478 x6430",
+            website: "ola.org",
+            company: {
+              name: "Considine-Lockman",
+              catchPhrase: "Synchronised bottom-line interface",
+              bs: "e-enable innovative applications"
+            }
+          },
+          {
+            id: 7,
+            name: "Kurtis Weissnat",
+            username: "Elwyn.Skiles",
+            email: "Telly.Hoeger@billy.biz",
+            address: {
+              street: "Rex Trail",
+              suite: "Suite 280",
+              city: "Howemouth",
+              zipcode: "58804-1099",
+              geo: {
+                lat: "24.8918",
+                lng: "21.8984"
+              }
+            },
+            phone: "210.067.6132",
+            website: "elvis.io",
+            company: {
+              name: "Johns Group",
+              catchPhrase: "Configurable multimedia task-force",
+              bs: "generate enterprise e-tailers"
+            }
+          },
+          {
+            id: 8,
+            name: "Nicholas Runolfsdottir V",
+            username: "Maxime_Nienow",
+            email: "Sherwood@rosamond.me",
+            address: {
+              street: "Ellsworth Summit",
+              suite: "Suite 729",
+              city: "Aliyaview",
+              zipcode: "45169",
+              geo: {
+                lat: "-14.3990",
+                lng: "-120.7677"
+              }
+            },
+            phone: "586.493.6943 x140",
+            website: "jacynthe.com",
+            company: {
+              name: "Abernathy Group",
+              catchPhrase: "Implemented secondary concept",
+              bs: "e-enable extensible e-tailers"
+            }
+          },
+          {
+            id: 9,
+            name: "Glenna Reichert",
+            username: "Delphine",
+            email: "Chaim_McDermott@dana.io",
+            address: {
+              street: "Dayna Park",
+              suite: "Suite 449",
+              city: "Bartholomebury",
+              zipcode: "76495-3109",
+              geo: {
+                lat: "24.6463",
+                lng: "-168.8889"
+              }
+            },
+            phone: "(775)976-6794 x41206",
+            website: "conrad.com",
+            company: {
+              name: "Yost and Sons",
+              catchPhrase: "Switchable contextually-based project",
+              bs: "aggregate real-time technologies"
+            }
+          },
+          {
+            id: 10,
+            name: "Clementina DuBuque",
+            username: "Moriah.Stanton",
+            email: "Rey.Padberg@karina.biz",
+            children: [{
+              id: 10,
+              name: "Clementina DuBuque",
+              username: "Moriah.Stanton",
+              email: "Rey.Padberg@karina.biz",
+              address: {
+                street: "Kattie Turnpike",
+                suite: "Suite 198",
+                city: "Lebsackbury",
+                zipcode: "31428-2261",
+                geo: {
+                  lat: "-38.2386",
+                  lng: "57.2232"
+                }
+              },
+              phone: "024-648-3804",
+              website: "ambrose.net",
+              company: {
+                name: "Hoeger LLC",
+                catchPhrase: "Centralized empowering task-force",
+                bs: "target end-to-end models"
+              }
+            }],
+            address: {
+              street: "Kattie Turnpike",
+              suite: "Suite 198",
+              city: "Lebsackbury",
+              zipcode: "31428-2261",
+              geo: {
+                lat: "-38.2386",
+                lng: "57.2232"
+              }
+            },
+            phone: "024-648-3804",
+            website: "ambrose.net",
+            company: {
+              name: "Hoeger LLC",
+              catchPhrase: "Centralized empowering task-force",
+              bs: "target end-to-end models"
+            }
+          }
+        ],
+      }),
+
+      computed: {
+        items() {
+          return [
+            {
+              name: 'Users',
+              children: this.users,
+            },
+          ]
+        },
+        selected() {
+          if (!this.active.length) return undefined
+
+          const id = this.active[0]
+
+          return this.users.find(user => user.id === id)
+        },
+      },
+
+      watch: {
+        selected: 'randomAvatar',
+      },
+
+      methods: {
+        async fetchUsers(item) {
+          // Remove in 6 months and say
+          // you've made optimizations! :)
+          await pause(1500)
+
+          return fetch('https://jsonplaceholder.typicode.com/users')
+            .then(res => res.json())
+            .then(json => (item.children.push(...json)))
+            .catch(err => console.warn(err))
+        },
+        randomAvatar() {
+          this.avatar = avatars[Math.floor(Math.random() * avatars.length)]
+        },
+      },
+    })
+  </script>
+</body>
+
+</html>

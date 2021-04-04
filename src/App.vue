@@ -1,5 +1,17 @@
 <template>
   <div id="app">
+    <header>
+      <input
+        type="file"
+        ref="fileloader"
+        style="display: none"
+        @change="loadProject"
+      />
+      <div class="button green" @click="$refs.fileloader.click()">
+        Загрузить проект
+      </div>
+      <div class="button green" @click="saveProject">Сохранить проект</div>
+    </header>
     <div class="envs">
       <table>
         <caption>
@@ -58,9 +70,14 @@
                 {{ type }}
               </option>
             </select>
+            <div
+              class="button mini red"
+              @click="variables.splice(indexVariable, 1)"
+            >
+              Удалить переменную
+            </div>
           </td>
           <td>
-            {{ variable }}
             <template v-if="variable.type == utils.variable_types.string">
               <input type="text" v-model="variable.data.default" />
             </template>
@@ -83,20 +100,20 @@
           </td>
           <td v-for="(env, indexEnv) in envs" :key="indexEnv">
             <template v-if="variable.type == utils.variable_types.string">
-              <input type="text" v-model="variable.data[env.title]" />
+              <input type="text" v-model="variable.data[env.name]" />
             </template>
             <template v-else-if="variable.type == utils.variable_types.int">
-              <input type="number" v-model="variable.data[env.title]" />
+              <input type="number" v-model="variable.data[env.name]" />
             </template>
             <template v-else-if="variable.type == utils.variable_types.float">
               <input
                 type="number"
                 step="0.01"
-                v-model="variable.data[env.title]"
+                v-model="variable.data[env.name]"
               />
             </template>
             <template v-else>
-              <select v-model="variable.data[env.title]">
+              <select v-model="variable.data[env.name]">
                 <option :value="true">true</option>
                 <option :value="false">false</option>
               </select>
@@ -393,11 +410,15 @@
         </table>
       </div>
     </div>
-    <div style="display: none">{{ update }}</div>
   </div>
 </template>
 
 <script>
+//TODO добавление уровня логгера
+//TODO автогенерация документации разобраться с documentation.html
+//TODO сохранение с zip архив
+//TODO добавление в ахрхив всех файлов для полноценной генерации
+//TODO добавление .service
 import utils from "./utils.js";
 import compile from "./compile.js";
 import steps from "./steps.js";
@@ -405,69 +426,86 @@ export default {
   name: "App",
   components: {},
   created() {},
-  mounted2() {
-    const step = this.addStep(
-      utils.step_type.sql,
-      utils.sql_type.query,
-      "sql query 1"
-    );
-    this.addParam(step);
-    this.addParam(step);
-    this.addStep(
-      utils.step_type.sql,
-      utils.sql_type.query,
-      "sql query 2"
-    ).inputstep = step;
-    this.addStep(utils.step_type.sql, utils.sql_type.query, "sql query 3");
-
-    this.addVariable(
-      "var1 text",
-      "default",
-      utils.variable_types.string,
-      "variable 1"
-    );
-    this.addVariable(
-      "var2 text",
-      "default",
-      utils.variable_types.string,
-      "variable 2"
-    );
-    this.addVariable("var3 int", "default", utils.variable_types.int, 3);
-    this.addVariable("var4 int", "default", utils.variable_types.int, 4);
-    this.addVariable("var5 float", "default", utils.variable_types.float, 5.1);
-    this.addVariable("var6 float", "default", utils.variable_types.float, 6.1);
-    this.addVariable("var7 bool", "default", utils.variable_types.bool, true);
-    this.addVariable("var8 bool", "default", utils.variable_types.bool, "true");
-  },
   data: function () {
     return {
-      envs: [],
-      utils,
-      steps1: [],
-      variables1: [],
-      steps,
-      update: "",
-      variables1: [
-        { name: "var1 text", type: "string", default: "variable 1" },
-        { name: "var2 text", type: "string", default: "variable 2" },
-        { name: "var3 int", type: "int", default: 3 },
-        { name: "var4 int", type: "int", default: 4 },
-        { name: "var5 float", type: "float", default: 5.1 },
-        { name: "var6 float", type: "float", default: 6.1 },
-        { name: "var7 bool", type: "bool", default: true },
-        { name: "var8 bool", type: "bool", default: true },
-      ],
-      variables: [],
       connections: [],
+      envs: [],
+      steps,
+      variables: [],
+      utils,
     };
   },
   methods: {
+    save(fileName) {
+      let result = JSON.stringify(
+        {
+          variables: this.variables,
+          connections: this.connections,
+          steps: this.steps,
+          envs: this.envs,
+        },
+        null,
+        2
+      );
+      compile.download(fileName, result);
+    },
+    saveProject() {
+      let fileName = prompt("Введите название файла.", "project");
+      if (!fileName || fileName == "") return;
+      if (fileName.indexOf(".json") == -1) {
+        fileName += ".json";
+      }
+      this.save(fileName);
+    },
+    loadProject() {
+      if (this.$refs.fileloader.files.length == 0) return;
+      let reader = new FileReader();
+
+      reader.onload = () => {
+        console.log("чтение файла с конфигурацией произведено.");
+        console.log(reader.result);
+        const project = JSON.parse(reader.result);
+        console.log(project);
+        if (!project.envs) {
+          alert("В проекте не хватает секции envs");
+          return;
+        }
+        if (!project.steps) {
+          alert("В проекте не хватает секции steps");
+          return;
+        }
+        if (!project.variables) {
+          alert("В проекте не хватает секции variables");
+          return;
+        }
+        if (!project.connections) {
+          alert("В проекте не хватает секции connections");
+          return;
+        }
+        this.connections = project.connections;
+        this.envs = project.envs;
+        this.steps = project.steps;
+        this.variables = project.variables;
+      };
+
+      reader.onerror = function () {
+        alert(
+          "чтение файла проекта закончилось с ошибкой, более детально в консоли."
+        );
+        console.log(reader.error);
+      };
+      reader.readAsText(this.$refs.fileloader.files[0]);
+    },
     compile() {
       console.clear();
-      const compiled = compile.steps(this.steps, this.connections,this.variables);
+      const compiled = compile.steps(
+        this.steps,
+        this.connections,
+        this.variables
+      );
       let variableGO = compiled.steps;
-      // compile.download("variables.go",variableGO);
-      // compile.download("logic.go",compiled.logic);
+      compile.download("variables.go",variableGO);
+      compile.download("logic.go",compiled.logic);
       console.log(variableGO);
       console.log(compiled.logic);
     },

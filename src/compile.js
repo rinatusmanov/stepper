@@ -153,8 +153,6 @@ ${tab(1)}defer ${step.uuid}_CHANNEL_WRITER_COUNT_MUTEX.Unlock()
 ${tab(1)}${step.uuid}_CHANNEL_WRITER_COUNT--
 ${tab(1)}if ${step.uuid}_CHANNEL_WRITER_COUNT == 0 {
 ${tab(2)}select {
-${tab(2)}case <-${step.uuid}_CHANNEL:
-${tab(3)}return
 ${tab(2)}default:
 ${tab(3)}globalLogger.Info("channel for ${step.uuid}(step ${step.title}) is closing")
 ${tab(3)}close(${step.uuid}_CHANNEL)
@@ -244,10 +242,10 @@ ${tab(1)}}()
                                 result += `,_ = strconv.ParseBool(fmt.Sprint(getVar("${cond.input_variable.variable.name}")))`;
                                 break;
                             case 'int64':
-                                result += `,_ = strconv.ParseInt(fmt.Sprint(getVar("${cond.input_variable.variable.name}")), 64, 10)`;
+                                result += `,_ = strconv.ParseInt(fmt.Sprint(getVar("${cond.input_variable.variable.name}")), 10, 64)`;
                                 break;
                             case 'float64':
-                                result += `,_ = strconv.ParseFloat(fmt.Sprint(getVar("${cond.input_variable.variable.name}")),64)`;
+                                result += `,_ = strconv.ParseFloat(fmt.Sprint(getVar("${cond.input_variable.variable.name}")),10)`;
                                 break;
                             default:
                                 result += ` ${type}`
@@ -266,15 +264,20 @@ ${tab(1)}}()
 ${tab(1)}globalLogger.Info("start ${step.uuid}_LOGIC(${step.title})")
 ${tab(1)}defer globalLogger.Info("stop ${step.uuid}_LOGIC(${step.title})")
 ${tab(1)}defer globalGourotineWaitGroup.Done()
-${tab(1)}globalLogger.Info("run ${step.uuid}_LOGIC(${step.title})")
 ${tab(1)}output_channel:= ${step.uuid}_CHANNEL_GET()
 ${tab(1)}defer ${step.uuid}_CHANNEL_CLOSE()
-${tab(1)}globalStartWaitGroup.Wait()
+${tab(1)}globalStartWaitGroup.Done() 
 `
         if (step.inputstep && step.inputstep.uuid && step.inputstep.uuid != "") {
             result += `${tab(1)} ch:= ${step.inputstep.uuid}_CHANNEL_CREATE_DUBLICATE_IF_NOT_EXISTS("${step.uuid}")
+${tab(1)}globalStartWaitGroup.Wait()
+${tab(1)}globalLogger.Info("run ${step.uuid}_LOGIC(${step.title})")
 ${tab(1)}var data []${step.inputstep.uuid}_STRUCT
-${tab(1)}defer ${step.uuid}_step_logic(data, output_channel)
+${tab(1)}defer func() {
+${tab(2)}if len(data) > 0 {
+${tab(3)}${step.uuid}_step_logic(data, output_channel)
+${tab(2)}}
+${tab(1)}}()
 ${tab(1)} for {
 ${tab(2)}select {
 ${tab(2)}case data_from_channel, opened := <-ch:
@@ -314,7 +317,9 @@ func ${step.uuid}_step_logic(ch chan ${step.uuid}_STRUCT) {
 }
             
 `
-            result += `${tab(1)} ${step.uuid}_step_logic(output_channel)
+            result += `${tab(1)}globalStartWaitGroup.Wait()
+${tab(1)}globalLogger.Info("run ${step.uuid}_LOGIC(${step.title})")
+${tab(1)} ${step.uuid}_step_logic(output_channel)
     }
 
 `;
@@ -322,6 +327,7 @@ func ${step.uuid}_step_logic(ch chan ${step.uuid}_STRUCT) {
         result += `func init() {
 ${tab(1)}for i := 0; i < ${step.uuid}_LOGIC_THREAD_COUNT; i++ {
 ${tab(2)}globalGourotineWaitGroup.Add(1)
+${tab(2)}globalStartWaitGroup.Add(1)
 ${tab(2)}go ${step.uuid}_LOGIC()
 ${tab(1)}}
 }
